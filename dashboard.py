@@ -24,12 +24,12 @@ def main():
     # -----------------------------------------------
     # Configuration of the streamlit page
     # -----------------------------------------------
-    st.set_page_config(page_title='Loan application scoring dashboard',
+    st.set_page_config(page_title='Tableau de bord de notation des demandes de prêt bancaire',
                        page_icon='🧊',
                        layout='centered',
                        initial_sidebar_state='auto')
     # Display the title
-    st.title('Loan application scoring dashboard')
+    st.title('prêt bancaire - application - scoring dashboard')
     st.subheader("RCS -OC - Data Scientist")
 
     # Display the LOGO
@@ -49,7 +49,7 @@ def main():
     def get_list_display_features(f, def_n, key):
         all_feat = f
         n = st.slider("Nb of features to display",
-                      min_value=2, max_value=40,
+                      min_value=2, max_value=20,
                       value=def_n, step=None, format=None, key=key)
 
         disp_cols = list(get_features_importances().sort_values(ascending=False).iloc[:n].index)
@@ -328,7 +328,7 @@ def main():
                 # st.write(features)
                 nb_features = st.slider("Number of features to display",
                                         min_value=2,
-                                        max_value=50,
+                                        max_value=10,
                                         value=10,
                                         step=None,
                                         format=None,
@@ -355,91 +355,24 @@ def main():
         #              Display feature's distribution (Boxplots)
         ##########################################################################
         if st.checkbox('show features distribution by class', key=20):
-            st.header('Boxplots of the main features')
+            st.header('Histplot of the main features')
             fig, ax = plt.subplots(figsize=(20, 10))
-            with st.spinner('Boxplot creation in progress...please wait.....'):
+            with st.spinner('histplot creation in progress...please wait.....'):
                 # Get Shap values for customer
                 shap_vals, expected_vals = values_shap(selected_id)
                 # Get features names
                 features = feat()
-                # Get selected columns
-                disp_box_cols = get_list_display_features(features, 2, key=45)
-                # -----------------------------------------------------------------------------------------------
-                # Get tagets and data for : all customers + Applicant customer + 20 neighbors of selected customer
-                # -----------------------------------------------------------------------------------------------
-                # neighbors + Applicant customer :
-                data_neigh, target_neigh = get_data_neigh(selected_id)
-                data_thousand_neigh, target_thousand_neigh, x_customer = get_data_thousand_neigh(selected_id)
-
-                x_cust, y_cust = get_selected_cust_data(selected_id)
-                x_customer.columns = x_customer.columns.str.split('.').str[0]
-                # Target impuatation (0 : 'repaid (....), 1 : not repaid (....)
-                # -------------------------------------------------------------
-                target_neigh = target_neigh.replace({0: 'repaid (neighbors)',
-                                                     1: 'not repaid (neighbors)'})
-                target_thousand_neigh = target_thousand_neigh.replace({0: 'repaid (neighbors)',
-                                                                       1: 'not repaid (neighbors)'})
-                y_cust = y_cust.replace({0: 'repaid (customer)',
-                                         1: 'not repaid (customer)'})
-
-                # y_cust.rename(columns={'10006':'TARGET'}, inplace=True)
-                # ------------------------------
-                # Get 1000 neighbors personal data
-                # ------------------------------
-                df_thousand_neigh = pd.concat([data_thousand_neigh[disp_box_cols], target_thousand_neigh], axis=1)
-                df_melt_thousand_neigh = df_thousand_neigh.reset_index()
-                df_melt_thousand_neigh.columns = ['index'] + list(df_melt_thousand_neigh.columns)[1:]
-                df_melt_thousand_neigh = df_melt_thousand_neigh.melt(id_vars=['index', 'TARGET'],
-                                                                     value_vars=disp_box_cols,
-                                                                     var_name="variables",  # "variables",
-                                                                     value_name="values")
-
-                sns.boxplot(data=df_melt_thousand_neigh, x='variables', y='values',
-                            hue='TARGET', linewidth=1, width=0.4,
-                            palette=['tab:green', 'tab:red'], showfliers=False,
-                            saturation=0.5, ax=ax)
-
-                # ------------------------------
-                # Get 20 neighbors personal data
-                # ------------------------------
-                df_neigh = pd.concat([data_neigh[disp_box_cols], target_neigh], axis=1)
-                df_melt_neigh = df_neigh.reset_index()
-                df_melt_neigh.columns = ['index'] + list(df_melt_neigh.columns)[1:]
-                df_melt_neigh = df_melt_neigh.melt(id_vars=['index', 'TARGET'],
-                                                   value_vars=disp_box_cols,
-                                                   var_name="variables",  # "variables",
-                                                   value_name="values")
-
-                sns.swarmplot(data=df_melt_neigh, x='variables', y='values', hue='TARGET', linewidth=1,
-                              palette=['darkgreen', 'darkred'], marker='o', size=15, edgecolor='k', ax=ax)
-
-                # -----------------------
-                # Applicant customer data
-                # -----------------------
-                df_selected_cust = pd.concat([x_customer[disp_box_cols], y_cust], axis=1)
-                # st.write("df_sel_cust :", df_sel_cust)
-                df_melt_sel_cust = df_selected_cust.reset_index()
-                df_melt_sel_cust.columns = ['index'] + list(df_melt_sel_cust.columns)[1:]
-                df_melt_sel_cust = df_melt_sel_cust.melt(id_vars=['index', 'TARGET'],
-                                                         value_vars=disp_box_cols,
-                                                         var_name="variables",
-                                                         value_name="values")
-
-                sns.swarmplot(data=df_melt_sel_cust, x='variables', y='values',
-                              linewidth=1, color='y', marker='o', size=20,
-                              edgecolor='k', label='applicant customer', ax=ax)
-
-                # legend
-                h, _ = ax.get_legend_handles_labels()
-                ax.legend(handles=h[:5])
-
-                plt.xticks(rotation=20, ha='right')
-                plt.show()
-
-                st.write(fig)  # st.pyplot(fig) # the same
-
-                plt.xticks(rotation=20, ha='right')
-                plt.show()
+                
+	            #Age distribution plot
+                data_all = get_all_cust_data()
+                data_cust=get_selected_cust_data(selected_id)
+                for f in features:
+                	df_income = pd.DataFrame(data_all[f])
+                	fig, ax = plt.subplots(figsize=(10, 5))
+                	sns.histplot(df_income, edgecolor = 'k', color="goldenrod", bins=20)
+                	ax.axvline(int(data_cust[f].values), color="green", linestyle='--')
+                	ax.set(title='Distribution normal', xlabel=f, ylabel='')
+                	st.pyplot(fig)
 
                 st.markdown('_Dispersion of the main features for random sample,\
                 20 nearest neighbors and applicant customer_')
