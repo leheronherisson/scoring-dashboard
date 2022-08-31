@@ -357,13 +357,16 @@ def main():
         if st.checkbox('show features distribution by class', key=20):
             st.header('Histplot of the main features')
             with st.spinner('histplot creation in progress...please wait.....'):
+                # Get Shap values for customer
+                shap_vals, expected_vals = values_shap(selected_id)
                 # Get features names
                 features = feat()
-                
+                # Get selected columns
+                disp_box_cols = get_list_display_features(features, 2, key=45)
 	            #Age distribution plot
                 x_all,y_all = get_all_cust_data()
                 x_cust, y_cust=get_selected_cust_data(selected_id)
-                for f in features:
+                for f in disp_box_cols:
                 	df_income = x_all[f]
                 	fig, ax = plt.subplots(figsize=(10, 5))
                 	sns.histplot(df_income, edgecolor = 'k', color="goldenrod", bins=20)
