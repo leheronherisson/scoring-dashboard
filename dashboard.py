@@ -102,8 +102,8 @@ def main():
         response = requests.get(data_api_url)
         # Convert from JSON format to Python dict
         content = json.loads(response.content.decode('utf-8'))  #
-        x_all_cust = json_normalize(content['X_train'])  # Results contain the required data
-        y_all_cust = json_normalize(content['y_train'].rename('TARGET'))  # Results contain the required data
+        x_all_cust = pd.DataFrame(content['X_train'])  # Results contain the required data
+        y_all_cust = (pd.Series(content['y_train']).rename('TARGET'))  # Results contain the required data
         return x_all_cust, y_all_cust
 
     # Get score (cached)
@@ -361,14 +361,13 @@ def main():
                 features = feat()
                 
 	            #Age distribution plot
-                data_all = get_all_cust_data()
-                data_cust=get_selected_cust_data(selected_id)
+                x_all,y_all = get_all_cust_data()
+                x_cust, y_cust=get_selected_cust_data(selected_id)
                 for f in features:
-                	df_income = data_all[f]
-                	fig, ax = plt.subplots(figsize=(10, 5))
+                	df_income = x_all[f]
                 	fig, ax = plt.subplots(figsize=(10, 5))
                 	sns.histplot(df_income, edgecolor = 'k', color="goldenrod", bins=20)
-                	ax.axvline(int(data_cust[f].values), color="green", linestyle='--')
+                	ax.axvline(int(x_cust[f].values), color="green", linestyle='--')
                 	ax.set(title='Customer Distribution', xlabel=f, ylabel='')
                 	st.pyplot(fig)
 
