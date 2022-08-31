@@ -356,10 +356,7 @@ def main():
         ##########################################################################
         if st.checkbox('show features distribution by class', key=20):
             st.header('Histplot of the main features')
-            fig, ax = plt.subplots(figsize=(20, 10))
             with st.spinner('histplot creation in progress...please wait.....'):
-                # Get Shap values for customer
-                shap_vals, expected_vals = values_shap(selected_id)
                 # Get features names
                 features = feat()
                 
@@ -367,11 +364,12 @@ def main():
                 data_all = get_all_cust_data()
                 data_cust=get_selected_cust_data(selected_id)
                 for f in features:
-                	df_income = pd.DataFrame(data_all[f])
+                	df_income = data_all[f]
+                	fig, ax = plt.subplots(figsize=(10, 5))
                 	fig, ax = plt.subplots(figsize=(10, 5))
                 	sns.histplot(df_income, edgecolor = 'k', color="goldenrod", bins=20)
                 	ax.axvline(int(data_cust[f].values), color="green", linestyle='--')
-                	ax.set(title='Distribution normal', xlabel=f, ylabel='')
+                	ax.set(title='Customer Distribution', xlabel=f, ylabel='')
                 	st.pyplot(fig)
 
                 st.markdown('_Dispersion of the main features for random sample,\
